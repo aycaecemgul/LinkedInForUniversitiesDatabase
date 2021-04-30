@@ -1,0 +1,237 @@
+CREATE TABLE  USERR(
+	userID INT NOT NULL	,
+    pword NVARCHAR(15) NOT NULL,
+    mail NVARCHAR(45) NOT NULL,
+    about NVARCHAR(150),
+    url NVARCHAR(45) UNIQUE,
+    phone INT UNIQUE,
+    location NVARCHAR(45),
+    CONSTRAINT user_pk PRIMARY KEY (userID)
+);
+
+CREATE TABLE  ORGANIZATION(
+	orgID INT NOT NULL,
+    website NVARCHAR(45),
+    orgDate DATE,
+    sector NVARCHAR(25),
+    orgType NVARCHAR(25),
+    CONSTRAINT org_pk PRIMARY KEY (orgID),
+    CONSTRAINT org_user_fk FOREIGN KEY (orgID) REFERENCES USERR(userID) ON DELETE CASCADE
+);
+
+CREATE TABLE  PERSON(
+	personID INT NOT NULL,
+    surname NVARCHAR(25) NOT NULL,
+    bdate DATE,
+    cv NVARCHAR(150),
+    CONSTRAINT person_pk PRIMARY KEY (personID),
+    CONSTRAINT per_user_fk FOREIGN KEY (personID) REFERENCES USERR(userID) ON DELETE CASCADE
+);
+
+CREATE TABLE  COMPANY (
+	compID INT NOT NULL,
+    isNonProfit BIT,
+    CONSTRAINT comp_pk PRIMARY KEY (compID),
+    CONSTRAINT comp_org_fk FOREIGN KEY (compID) REFERENCES ORGANIZATION(orgID) ON DELETE CASCADE
+);
+
+
+CREATE TABLE  UNIVERSITY(
+	uniID INT NOT NULL,
+	CONSTRAINT uni_pk PRIMARY KEY (uniID),
+    CONSTRAINT uni_org_fk FOREIGN KEY (uniID) REFERENCES ORGANIZATION(orgID) ON DELETE CASCADE
+);
+
+CREATE TABLE  STUDENT(
+
+	studentID INT NOT NULL,
+    CONSTRAINT PRIMARY KEY (studentID),
+	CONSTRAINT stu_per_fk FOREIGN KEY (studentID) REFERENCES PERSON(personID)
+
+);
+
+
+CREATE TABLE  INSTRUCTOR(
+	instID INT NOT NULL,
+    CONSTRAINT inst_pk PRIMARY KEY (instID),
+	CONSTRAINT inst_per_fk FOREIGN KEY (instID) REFERENCES PERSON(personID) ON DELETE CASCADE
+);
+
+CREATE TABLE  COURSE(
+	courseID INT NOT NULL,
+    semester NVARCHAR(25),
+    courseName NVARCHAR(25),
+    instID INT NOT NULL,
+    uniID INT NOT NULL,
+    CONSTRAINT course_pk PRIMARY KEY (courseID),
+    CONSTRAINT course_inst_fk FOREIGN KEY (instID) REFERENCES INSTRUCTOR(instID) ON DELETE CASCADE,
+    CONSTRAINT course_uni_fk FOREIGN KEY (uniID) REFERENCES UNIVERSITY(uniID)  ON DELETE CASCADE
+);
+
+
+CREATE TABLE  OPEN_JOB(
+	jobID INT NOT NULL,
+    createDate DATE NOT NULL,
+    location NVARCHAR(25) NOT NULL,
+    workType NVARCHAR(25) NOT NULL,
+    position NVARCHAR(25) NOT NULL,
+    positionLvl NVARCHAR(25),
+    expStatus NVARCHAR(25),
+    department NVARCHAR(25),
+    eduLvl NVARCHAR(25),
+    disableStatus BIT,
+    category NVARCHAR(25) NOT NULL,
+    orgID INT NOT NULL,
+    CONSTRAINT oJob_pk PRIMARY KEY (jobID),
+    CONSTRAINT job_org_fk FOREIGN KEY (orgID) REFERENCES ORGANIZATION(orgID)
+    
+);
+
+CREATE TABLE  SKILL(
+	skillName NVARCHAR(25) NOT NULL,
+    testID INT,
+    skillType NVARCHAR(25) NOT NULL,
+    CONSTRAINT skill_pk PRIMARY KEY (skillName)
+);
+ 
+CREATE TABLE  CONTENT(
+	courseID INT NOT NULL,
+    contentName NVARCHAR(25) NOT NULL,
+    url NVARCHAR(25) UNIQUE NOT NULL,
+    weekNo INT NOT NULL,
+    CONSTRAINT cont_pk PRIMARY KEY(courseID,contentName),
+    CONSTRAINT course_cont_fk FOREIGN KEY (courseID) REFERENCES COURSE(courseID)
+);
+
+
+CREATE TABLE  REQUIREMENT(
+	jobID INT NOT NULL,
+    skillName NVARCHAR(25) NOT NULL,
+    CONSTRAINT req_pk PRIMARY KEY(jobID,skillName),
+    CONSTRAINT req_job_fk FOREIGN KEY (jobID) REFERENCES OPEN_JOB(jobID),
+    CONSTRAINT req_skill_fk FOREIGN KEY (skillName) REFERENCES SKILL(skillName)
+    
+);
+
+CREATE TABLE  COMP_PAGE(
+	compID INT NOT NULL,
+    pageName NVARCHAR(25),
+    pageType NVARCHAR(25) NOT NULL,
+    about NVARCHAR(150),
+    CONSTRAINT comp_pk PRIMARY KEY(compID,pageName),
+    CONSTRAINT page_comp_fk FOREIGN KEY (compID) REFERENCES COMPANY(compID)
+);
+CREATE TABLE  ACHIEVEMENT(
+	personID INT NOT NULL,
+    achName NVARCHAR(25) NOT NULL,
+    achDate DATE NOT NULL,
+    achtype NVARCHAR(25) NOT NULL,
+	about NVARCHAR(150),
+	CONSTRAINT ach_pk PRIMARY KEY(personID,achName),
+    CONSTRAINT ach_per_fk FOREIGN KEY (personID) REFERENCES PERSON(personID)
+);
+
+CREATE TABLE  EXPERIENCE(
+	personID INT NOT NULL,
+    orgID INT NOT NULL,
+    CONSTRAINT exp_pk PRIMARY KEY (personID,orgID),
+    CONSTRAINT exp_per_fk FOREIGN KEY (personID) REFERENCES PERSON(personID),
+    CONSTRAINT org_per_fk FOREIGN KEY (orgID) REFERENCES ORGANIZATION(orgID)
+);
+
+CREATE TABLE  SERTIFICATE(
+	personID INT NOT NULL,
+    orgID INT NOT NULL,
+    sertRole NVARCHAR(25) NOT NULL,
+    purpose NVARCHAR(25),
+    startDate DATE,
+    endDate DATE,
+    CONSTRAINT PRIMARY KEY (personID,orgID),
+    CONSTRAINT ser_per_fk FOREIGN KEY (personID) REFERENCES PERSON(personID),
+    CONSTRAINT ser_org_fk FOREIGN KEY (orgID) REFERENCES ORGANIZATION(orgID)
+);
+CREATE TABLE  VOLUNTEERED_EXP(
+	personID INT NOT NULL,
+    orgID INT NOT NULL,
+    expRole NVARCHAR(25) NOT NULL,
+    purpose NVARCHAR(25) NOT NULL,
+    startDate DATE NOT NULL,
+    endDate DATE,
+    CONSTRAINT PRIMARY KEY (personID,orgID),
+    CONSTRAINT volexp_per_fk FOREIGN KEY (personID) REFERENCES PERSON(personID),
+    CONSTRAINT volexp_org_fk FOREIGN KEY (orgID) REFERENCES ORGANIZATION(orgID)
+);
+CREATE TABLE  EDUCATE(
+	personID INT NOT NULL,
+    uniID INT NOT NULL,
+    startDate DATE,
+    endDate DATE,
+    about NVARCHAR(150),
+    dept NVARCHAR(25) NOT NULL,
+    CONSTRAINT PRIMARY KEY (personID,uniID),
+    CONSTRAINT edu_per_fk FOREIGN KEY (personID) REFERENCES PERSON(personID),
+    CONSTRAINT edu_uni_fk FOREIGN KEY (uniID) REFERENCES UNIVERSİTY(uniID)
+);
+CREATE TABLE  APPLIES(
+	personID INT NOT NULL,
+    jobID INT NOT NULL,
+    CONSTRAINT PRIMARY KEY (personID,jobID),
+    CONSTRAINT app_per_fk FOREIGN KEY (personID) REFERENCES PERSON(personID),
+    CONSTRAINT app_job_fk FOREIGN KEY (jobID) REFERENCES OPEN_JOB(jobID)
+);
+CREATE TABLE  SAVES(
+	personID INT NOT NULL,
+    jobID INT NOT NULL,
+    CONSTRAINT PRIMARY KEY (personID,jobID),
+     CONSTRAINT sa_per_fk FOREIGN KEY (personID) REFERENCES PERSON(personID),
+    CONSTRAINT sa_job_fk FOREIGN KEY (jobID) REFERENCES OPEN_JOB(jobID)
+);
+
+CREATE TABLE  ENROLLS(
+	studentID INT NOT NULL,
+    courseID INT NOT NULL,
+	CONSTRAINT en_pk PRIMARY KEY (studentID,courseID),
+    CONSTRAINT en_stu_fk FOREIGN KEY (studentID) REFERENCES STUDENT(studentID),
+	CONSTRAINT en_course_fk FOREIGN KEY (courseID) REFERENCES COURSE(courseID)
+);
+CREATE TABLE  HAS_SKILL(
+	personID INT NOT NULL,
+    skillName NVARCHAR(25) NOT NULL,
+    noOfEndorses INT NOT NULL,
+    CONSTRAINT has_pk PRIMARY KEY (personID,skillName),
+    CONSTRAINT has_per_fk FOREIGN KEY (personID) REFERENCES PERSON(personID),
+    CONSTRAINT has_ski_fk FOREIGN KEY (skillName) REFERENCES SKILL(skillName)
+);
+CREATE TABLE  CONNECTS(
+	personID1 INT NOT NULL,
+    personID2 INT NOT NULL,
+    connectType NVARCHAR(15),
+    CONSTRAINT con_pk PRIMARY KEY (personID1,personID2),
+    CONSTRAINT con_per_fk FOREIGN KEY (personID1) REFERENCES PERSON(personID),
+    CONSTRAINT con_per2_fk FOREIGN KEY (personID2) REFERENCES PERSON(personID)
+);
+CREATE TABLE  INTERESTED(
+	personID INT NOT NULL,
+    userID INT NOT NULL,
+	CONSTRAINT int_pk PRIMARY KEY (personID,userID),
+    CONSTRAINT int_per_fk FOREIGN KEY (personID) REFERENCES PERSON(personID),
+    CONSTRAINT int_us_fk FOREIGN KEY (userID) REFERENCES USERR(userID)
+     
+);
+
+/*multivalued attributes has their own table*/
+CREATE TABLE  ORG_lOCATION(
+	orgID INT NOT NULL,
+    location NVARCHAR(25),
+    CONSTRAINT loc_pk PRIMARY KEY(orgID,location),
+    CONSTRAINT loc_org FOREIGN KEY(orgID) REFERENCES ORGANIZATION(orgID)
+);
+
+CREATE TABLE  PAGE_LOCATION(
+	compID INT NOT NULL,
+    pageName NVARCHAR(25), 
+    location NVARCHAR(25),
+    CONSTRAINT page_loc_pk PRIMARY KEY (compID,pageName,location),
+    CONSTRAINT pa_loc_fk FOREIGN KEY (compID,pageName) REFERENCES COMP_PAGE(compID,pageName)
+);
+
